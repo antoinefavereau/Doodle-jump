@@ -45,12 +45,20 @@ class player {
     }
 
     move() {
-        if (this.leftPressed && this.x > 0) {
+        if (this.leftPressed) {
             this.x -= this.ax
         }
-        if (this.rightPressed && this.x + this.width < canvas.width) {
+        if (this.rightPressed) {
             this.x += this.ax
         }
+
+        if (this.x + this.width / 2 < 0) {
+            this.x = canvas.width - this.width / 2
+        }
+        if (this.x + this.width / 2 > canvas.width) {
+            this.x = - this.width / 2
+        }
+
         if (this.ay <= 20) {
             this.ay++
         }
@@ -64,7 +72,6 @@ class player {
 
         if (gameY > this.y - 100) {
             gameY = this.y - 100
-            console.log(gameY);
         }
     }
 
@@ -118,11 +125,12 @@ var tileArray = [new tile(canvas.width, 0, canvas.height - 10)]
 
 var gameY = 0
 
-for (let i = canvas.height - 200; i > 1000; i - 100)
+for (let i = canvas.height; i > -10000; i -= 50) {
     newTile(i)
+}
 
 var gameLoop = setInterval(tic, 10)
 
 function newTile(Y) {
-    tileArray.push(new tile(60, Math.random() * canvas.width - 60, Y))
+    tileArray.push(new tile(60, Math.random() * (canvas.width - 60), Y))
 }
