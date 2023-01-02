@@ -45,24 +45,32 @@ class player {
     }
 
     move() {
-        if (this.leftPressed) {
+        if (this.leftPressed && this.x > 0) {
             this.x -= this.ax
         }
-        if (this.rightPressed) {
+        if (this.rightPressed && this.x + this.width < canvas.width) {
             this.x += this.ax
         }
         if (this.ay <= 20) {
             this.ay++
         }
-        this.y += this.ay/2
-        this.checkTile()
-        this.y += this.ay/2
-        this.checkTile()
+
+        for (let i = 0; i < 4; i++) {
+            this.y += this.ay / 4
+            if (this.ay >= 0) {
+                this.checkTile()
+            }
+        }
+
+        if (gameY > this.y - 100) {
+            gameY = this.y - 100
+            console.log(gameY);
+        }
     }
 
     draw() {
         ctx.fillStyle = "rgb(250, 250, 250)"
-        ctx.fillRect(this.x, this.y, this.width, this.height)
+        ctx.fillRect(this.x, this.y - gameY, this.width, this.height)
     }
 
     checkTile() {
@@ -84,7 +92,7 @@ class tile {
 
     draw() {
         ctx.fillStyle = "rgb(250, 250, 250)"
-        ctx.fillRect(this.x, this.y, this.width, this.height)
+        ctx.fillRect(this.x, this.y - gameY, this.width, this.height)
     }
 }
 
@@ -100,14 +108,21 @@ function tic() {
         element.draw()
     });
 
-    if (_player.y >= canvas.height)
+    if (_player.y + _player.height >= gameY + canvas.height)
         clearInterval(gameLoop)
 }
 
 var _player = new player(canvas.width / 2 - 15, canvas.height - 200)
 
-var tileArray = [new tile(canvas.width, 0, canvas.height-10), new tile(60, canvas.width / 2 + 30, canvas.height - 200)]
+var tileArray = [new tile(canvas.width, 0, canvas.height - 10)]
 
 var gameY = 0
 
+for (let i = canvas.height - 200; i > 1000; i - 100)
+    newTile(i)
+
 var gameLoop = setInterval(tic, 10)
+
+function newTile(Y) {
+    tileArray.push(new tile(60, Math.random() * canvas.width - 60, Y))
+}
