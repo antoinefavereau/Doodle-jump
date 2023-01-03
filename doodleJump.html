@@ -1,13 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doodle Jump</title>
 </head>
+
 <body style="width: 100vw; height: 100vh; margin: 0; overflow: hidden;">
-    <canvas id="doodleJump" width="500" height="500" style="position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);"></canvas>
-    <script src="doodleJump.js"></script>
+    <canvas id="doodleJump" width="500" height="500"
+        style="position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);"></canvas>
+    <div id="fenetreScoreDoodleJump"
+        style="background-color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 200px; display: none; padding: 20px; border-radius: 10px;">
+        <p id="scoreDoodleJump" style="text-align: center; font-size: 48px; margin-top: 10px; margin-bottom: 10px;">0
+        </p>
+        <p>Meilleur score : <span id="bestScoreDoodleJump">0</span></p>
+        <button onclick="newGame()"
+            style="position: relative; left: 50%; transform: translateX(-50%); margin-top: 10px;">Rejouer</button>
+    </div>
+    <script>
+        const canvas = document.getElementById("doodleJump")
+        const ctx = canvas.getContext("2d")
+
+
+
+        class player {
+            constructor(X, Y) {
+                this.width = 30
+                this.height = 60
+                this.x = X
+                this.ax = 8
+                this.y = Y
+                this.ay = 0
+                this.jump = -20
+                this.leftPressed = false
+                this.rightPressed = false
+                document.addEventListener("keydown", (event) => {
+                    switch (event.key) {
+                        case "ArrowLeft":
+                            this.leftPressed = true
+                            break;
+
+                        case "ArrowRight":
+                            this.rightPressed = true
+                            break;
+
+                        default:
+                            break;
+                    }
+                })
+                document.addEventListener("keyup", (event) => {
+                    switch (event.key) {
+                        case "ArrowLeft":
+                            this.leftPressed = false
+                            break;
+
+                        case "ArrowRight":
+                            this.rightPressed = false
+                            break;
+
+                        default:
+                            break;
+                    }
+                })
+            }
+
+            move() {
+                if (this.leftPressed) {
+                    this.x -= this.ax
+                }
+                if (this.rightPressed) {
+                    this.x += this.ax
+                }
+
+                if (this.x + this.width / 2 < 0) {
+                    this.x = canvas.width - this.width / 2
+                }
+                if (this.x + this.width / 2 > canvas.width) {
+                    this.x = - this.width / 2
+                }
+
+                if (this.ay <= 20) {
+                    this.ay++
+                }
+
+                for (let i = 0; i < 4; i++) {
+                    this.y += this.ay / 4
+                    if (this.ay >= 0) {
+                        this.checkTile()
+                    }
+                }
+
+                if (gameY > this.y - 100) {
+                    gameY = this.y - 100
+                    newTile()
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = "rgb(250, 250, 250)"
+                ctx.fillRect(this.x, this.y - gameY, this.width, this.height)
+            }
+
+            checkTile() {
+                tileArray.forEach(element => {
+                    if (this.y + this.height >= element.y && this.x + this.width >= element.x && this.x <= element.x + element.width && this.y + this.height <= element.y + element.height) {
+                        if (element.type == "ressort") {
+                            this.ay = this.jump * 2
+                        } else {
+                            this.ay = this.jump
+                        }
+                    }
+                });
+            }
+        }
+
+        class tile {
+            constructor(TYPE, Y) {
+                this.type = TYPE
+                this.height = 10
+                this.x = Math.random() * (canvas.width - 60)
+                this.y = Y
+                this.width = 60
+                this.color = "rgb(250, 250, 250)"
+                switch (this.type) {
+                    case "ressort":
+                        this.width = 60
+                        this.color = "rgb(0, 128, 0)"
+                        break;
+
+                    case "first":
+                        this.width = canvas.width
+                        this.x = 0
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = this.color
+                ctx.fillRect(this.x, this.y - gameY, this.width, this.height)
+            }
+        }
+
+        function tic() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            ctx.fillStyle = "rgb(0, 0, 0)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+            _player.move()
+
+            tileArray.forEach(element => {
+                element.draw()
+            });
+
+            _player.draw()
+
+            ctx.font = '32px serif';
+            ctx.fillText("Score : " + Math.round(-gameY / 10), 10, 30);
+
+            if (_player.y + _player.height >= gameY + canvas.height) {
+                end()
+            }
+        }
+
+        var _player = new player(canvas.width / 2 - 15, canvas.height - 200)
+
+        var tileArray = [new tile("first", canvas.height - 10)]
+
+        var gameY = 0
+
+        var bestScore = 0
+
+        newTile()
+
+        var gameLoop = setInterval(tic, 10)
+
+        function newTile() {
+            while (tileArray[tileArray.length - 1].y > gameY) {
+                var tileFrequency = 60 - gameY / 500
+                if (tileFrequency > 150) {
+                    tileFrequency = 150
+                }
+                var type = "normal"
+                if (Math.floor(Math.random() * 10) == 1) {
+                    type = "ressort"
+                }
+                tileArray.push(new tile(type, tileArray[tileArray.length - 1].y - tileFrequency))
+            }
+        }
+
+        function end() {
+            clearInterval(gameLoop)
+            var ca = document.cookie.split(';');
+            try {
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf("bestScoreDoodleJump") == 0) {
+                        bestScore = c.substring("bestScoreDoodleJump=".length, c.length);
+                    }
+                }
+            } catch (error) {
+                console.log(error)
+            }
+
+            if (Math.round(-gameY / 10) > bestScore) {
+                bestScore = Math.round(-gameY / 10)
+                var date = new Date();
+                date.setTime(date.getTime() + (30 * 24 * 60 * 60 * 1000));
+                try {
+                    document.cookie = "bestScoreDoodleJump=" + bestScore + ";expires=" + date.toUTCString() + ";path=/";
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+            ctx.fillStyle = "rgba(0, 0, 0, .5)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+            document.getElementById("scoreDoodleJump").textContent = Math.round(-gameY / 10)
+            document.getElementById("bestScoreDoodleJump").textContent = bestScore
+            document.getElementById("fenetreScoreDoodleJump").style.display = "block"
+
+            // newGame()
+        }
+
+        function newGame() {
+            
+            document.getElementById("fenetreScoreDoodleJump").style.display = "none"
+
+            _player.x = canvas.width / 2 - 15
+            _player.y = canvas.height - 200
+
+            tileArray = [new tile("first", canvas.height - 10)]
+
+            gameY = 0
+
+            newTile()
+
+            gameLoop = setInterval(tic, 10)
+        }
+    </script>
 </body>
+
 </html>
