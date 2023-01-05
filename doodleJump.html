@@ -17,7 +17,7 @@
         </p>
         <p>Meilleur score : <span id="bestScoreDoodleJump">0</span></p>
         <button onclick="newGame()"
-            style="position: relative; left: 50%; transform: translateX(-50%); margin-top: 10px;">Rejouer</button>
+            style="position: relative; left: 50%; transform: translateX(-50%); margin-top: 10px;background-color: black; border: none; border-radius: 5px; padding: 10px 20px; color: white; cursor: pointer; font-weight: bold;">Rejouer</button>
     </div>
     <script>
         const canvas = document.getElementById("doodleJump")
@@ -30,10 +30,10 @@
                 this.width = 30
                 this.height = 60
                 this.x = X
-                this.ax = 8
+                this.ax = 12
                 this.y = Y
                 this.ay = 0
-                this.jump = -20
+                this.jump = -30
                 this.leftPressed = false
                 this.rightPressed = false
                 document.addEventListener("keydown", (event) => {
@@ -81,8 +81,8 @@
                     this.x = - this.width / 2
                 }
 
-                if (this.ay <= 20) {
-                    this.ay++
+                if (this.ay <= 40) {
+                    this.ay += 2
                 }
 
                 for (let i = 0; i < 4; i++) {
@@ -177,7 +177,7 @@
 
         newTile()
 
-        var gameLoop = setInterval(tic, 10)
+        var gameLoop = setInterval(tic, 1000 / 60)
 
         function newTile() {
             while (tileArray[tileArray.length - 1].y > gameY) {
@@ -231,7 +231,7 @@
         }
 
         function newGame() {
-            
+
             document.getElementById("fenetreScoreDoodleJump").style.display = "none"
 
             _player.x = canvas.width / 2 - 15
@@ -243,7 +243,7 @@
 
             newTile()
 
-            gameLoop = setInterval(tic, 10)
+            gameLoop = setInterval(tic, 1000 / 60)
         }
     </script>
 </body>
