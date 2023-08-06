@@ -48,17 +48,20 @@
 
         class player {
             constructor(X, Y) {
-                this.width = 30
-                this.height = 60
-                this.x = X
-                this.ax = 10
-                this.y = Y
-                this.ay = 0
-                this.jump = -20
-                this.leftPressed = false
-                this.rightPressed = false
-                document.addEventListener("keydown", (event) => {
-                    switch (event.key) {
+                this.width = 30;
+                this.height = 60;
+                this.x = X;
+                this.ax = 10;
+                this.y = Y;
+                this.ay = 0;
+                this.jump = -20;
+                this.leftPressed = false;
+                this.rightPressed = false;
+                this.mouseLeft = false;
+                this.mouseRight = false;
+
+                document.addEventListener("keydown", (e) => {
+                    switch (e.key) {
                         case "ArrowLeft":
                             this.leftPressed = true
                             break;
@@ -71,8 +74,8 @@
                             break;
                     }
                 })
-                document.addEventListener("keyup", (event) => {
-                    switch (event.key) {
+                document.addEventListener("keyup", (e) => {
+                    switch (e.key) {
                         case "ArrowLeft":
                             this.leftPressed = false
                             break;
@@ -85,13 +88,37 @@
                             break;
                     }
                 })
+                document.addEventListener("mousedown", (e) => {
+                    if (e.clientX < window.innerWidth / 2) {
+                        this.mouseLeft = true;
+                        this.mouseRight = false;
+                    } else {
+                        this.mouseRight = true;
+                        this.mouseLeft = false;
+                    }
+                })
+                document.addEventListener("mouseup", (e) => {
+                    this.mouseLeft = false;
+                    this.mouseRight = false;
+                })
+                document.addEventListener("mousemove", (e) => {
+                    if (this.mouseLeft || this.mouseRight) {
+                        if (e.clientX < window.innerWidth / 2) {
+                            this.mouseLeft = true;
+                            this.mouseRight = false;
+                        } else {
+                            this.mouseRight = true;
+                            this.mouseLeft = false;
+                        }
+                    }
+                })
             }
 
             move() {
-                if (this.leftPressed) {
+                if (this.leftPressed || this.mouseLeft) {
                     this.x -= this.ax
                 }
-                if (this.rightPressed) {
+                if (this.rightPressed || this.mouseRight) {
                     this.x += this.ax
                 }
 
