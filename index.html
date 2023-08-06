@@ -6,11 +6,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doodle Jump</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        #doodleJump {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: white;
+        }
+    </style>
 </head>
 
-<body style="width: 100vw; height: 100vh; margin: 0; overflow: hidden;">
-    <canvas id="doodleJump" width="500" height="500"
-        style="position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);"></canvas>
+<body>
+    <canvas id="doodleJump"></canvas>
     <div id="fenetreScoreDoodleJump"
         style="background-color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 200px; display: none; padding: 20px; border-radius: 10px;">
         <p id="scoreDoodleJump" style="text-align: center; font-size: 48px; margin-top: 10px; margin-bottom: 10px;">0
@@ -21,19 +36,25 @@
     </div>
     <script>
         const canvas = document.getElementById("doodleJump")
+        canvas.width = 500;
+        canvas.height = 500;
         const ctx = canvas.getContext("2d")
 
-
+        let stop = false;
+        let previousTime;
+        let frameTime;
+        let gameY;
+        let bestScore = 0
 
         class player {
             constructor(X, Y) {
                 this.width = 30
                 this.height = 60
                 this.x = X
-                this.ax = 12
+                this.ax = 10
                 this.y = Y
                 this.ay = 0
-                this.jump = -30
+                this.jump = -20
                 this.leftPressed = false
                 this.rightPressed = false
                 document.addEventListener("keydown", (event) => {
@@ -82,7 +103,7 @@
                 }
 
                 if (this.ay <= 40) {
-                    this.ay += 2
+                    this.ay += 1
                 }
 
                 for (let i = 0; i < 4; i++) {
@@ -146,46 +167,53 @@
             }
         }
 
-        function tic() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
-            ctx.fillStyle = "rgb(0, 0, 0)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height)
+        function game() {
+            let currentTime = (new Date()).getTime();
+            let elapsed = currentTime - previousTime;
 
-            _player.move()
+            if (elapsed > frameTime) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                ctx.fillStyle = "rgb(0, 0, 0)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-            tileArray.forEach(element => {
-                element.draw()
-            });
+                _player.move()
 
-            _player.draw()
+                tileArray.forEach(element => {
+                    element.draw()
+                });
 
-            ctx.font = '32px serif';
-            ctx.fillText("Score : " + Math.round(-gameY / 10), 10, 30);
+                _player.draw()
+
+                ctx.font = '32px serif';
+                ctx.fillText("Score : " + Math.round(-gameY / 10), 10, 30);
+
+                previousTime = currentTime - (elapsed % frameTime);
+
+                if (_player.y + _player.height >= gameY + canvas.height) {
+                    stop = true;
+                }
+            }
 
             if (_player.y + _player.height >= gameY + canvas.height) {
                 end()
+            } else {
+                requestAnimationFrame(game);
             }
         }
 
-        var _player = new player(canvas.width / 2 - 15, canvas.height - 200)
+        let _player = new player(canvas.width / 2 - 15, canvas.height - 200)
 
-        var tileArray = [new tile("first", canvas.height - 10)]
+        let tileArray = [new tile("first", canvas.height - 10)]
 
-        var gameY = 0
-
-        var bestScore = 0
-
-        newTile()
-
-        var gameLoop = setInterval(tic, 1000 / 60)
+        newGame();
 
         function newTile() {
             while (tileArray[tileArray.length - 1].y > gameY) {
-                var tileFrequency = 60 - gameY / 500
+                let tileFrequency = 60 - gameY / 500
                 if (tileFrequency > 150) {
                     tileFrequency = 150
                 }
-                var type = "normal"
+                let type = "normal"
                 if (Math.floor(Math.random() * 10) == 1) {
                     type = "ressort"
                 }
@@ -194,11 +222,11 @@
         }
 
         function end() {
-            clearInterval(gameLoop)
-            var ca = document.cookie.split(';');
+            stop = true;
+            let ca = document.cookie.split(';');
             try {
-                for (var i = 0; i < ca.length; i++) {
-                    var c = ca[i];
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
                     while (c.charAt(0) == ' ') {
                         c = c.substring(1);
                     }
@@ -212,7 +240,7 @@
 
             if (Math.round(-gameY / 10) > bestScore) {
                 bestScore = Math.round(-gameY / 10)
-                var date = new Date();
+                let date = new Date();
                 date.setTime(date.getTime() + (30 * 24 * 60 * 60 * 1000));
                 try {
                     document.cookie = "bestScoreDoodleJump=" + bestScore + ";expires=" + date.toUTCString() + ";path=/";
@@ -226,8 +254,6 @@
             document.getElementById("scoreDoodleJump").textContent = Math.round(-gameY / 10)
             document.getElementById("bestScoreDoodleJump").textContent = bestScore
             document.getElementById("fenetreScoreDoodleJump").style.display = "block"
-
-            // newGame()
         }
 
         function newGame() {
@@ -243,7 +269,9 @@
 
             newTile()
 
-            gameLoop = setInterval(tic, 1000 / 60)
+            previousTime = 0;
+            frameTime = 1000 / 60;
+            game();
         }
     </script>
 </body>
