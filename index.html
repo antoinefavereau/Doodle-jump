@@ -112,6 +112,30 @@
                         }
                     }
                 })
+                document.addEventListener("touchstart", (e) => {
+                    if (e.touches[0].clientX < window.innerWidth / 2) {
+                        this.mouseLeft = true;
+                        this.mouseRight = false;
+                    } else {
+                        this.mouseRight = true;
+                        this.mouseLeft = false;
+                    }
+                })
+                document.addEventListener("touchend", (e) => {
+                    this.mouseLeft = false;
+                    this.mouseRight = false;
+                })
+                document.addEventListener("touchmove", (e) => {
+                    if (this.mouseLeft || this.mouseRight) {
+                        if (e.touches[0].clientX < window.innerWidth / 2) {
+                            this.mouseLeft = true;
+                            this.mouseRight = false;
+                        } else {
+                            this.mouseRight = true;
+                            this.mouseLeft = false;
+                        }
+                    }
+                })
             }
 
             move() {
